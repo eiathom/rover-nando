@@ -1,13 +1,15 @@
+import { logger } from "./services/logging/index";
+
 enum Heading {
-    NORTH = 'N', SOUTH = 'S', EAST = 'E', WEST = 'W'
+    NORTH = "N", SOUTH = "S", EAST = "E", WEST = "W",
 }
 
 enum Direction {
-    LEFT = 'L', RIGHT = 'R'
+    LEFT = "L", RIGHT = "R",
 }
 
 enum Movement {
-    MOVE = 'M'
+    MOVE = "M",
 }
 
 /*
@@ -18,10 +20,10 @@ class Command {
     constructor() {
         this.sequence = [];
     }
-    addSequence(sequence: Array<Direction|Movement>): void {
+    public addSequence(sequence: Array<Direction|Movement>): void {
         this.sequence.push(...sequence);
     }
-    getSequence(): Array<Direction|Movement> {
+    public getSequence(): Array<Direction|Movement> {
         return this.sequence;
     }
 }
@@ -30,14 +32,14 @@ class Command {
  * A message encapsulates a series of commands to send to a rover
  */
 class Message {
-    private commands: Array<Command>;
+    private commands: Command[];
     constructor() {
         this.commands = [];
     }
-    addCommand(command: Command): void {
+    public addCommand(command: Command): void {
         this.commands.push(command);
     }
-    getCommands(): Array<Command> {
+    public getCommands(): Command[] {
         return this.commands;
     }
 }
@@ -82,17 +84,28 @@ class MoveRover implements Moveable {
         this.lowerBound = lowerBound;
         this.upperBound = upperBound;
     }
-    getUpperBound(): Bound {
+    /*
+     * @Overrride
+     * Move from the current position to a position computed from input parameters
+     */
+    public move(position: Position, command: Command): Position {
+        for (const sequence of command.getSequence()) {
+            logger.info("inputOfSequence::", sequence);
+            this.algorithm(position, sequence);
+        }
+        return position;
+    }
+    public getUpperBound(): Bound {
         return this.upperBound;
     }
-    setUpperBound(x: number, y: number): void {
+    public setUpperBound(x: number, y: number): void {
         this.upperBound.setX(x);
         this.upperBound.setY(y);
     }
-    validYMove(step: number): boolean {
+    private validYMove(step: number): boolean {
         return (step >= this.lowerBound.getY() && step <= this.upperBound.getY());
     }
-    validXMove(step: number): boolean {
+    private validXMove(step: number): boolean {
         return (step >= this.lowerBound.getX() && step <= this.upperBound.getX());
     }
     /*
@@ -101,33 +114,33 @@ class MoveRover implements Moveable {
      * E === x + M
      * W === x - M
      */
-    changePositionMove(position: Position): Position {
+    private changePositionMove(position: Position): Position {
         if (position.getHeading() === Heading.NORTH) {
             const step: number = position.getBound().getY() + this.step;
             if (this.validYMove(step)) {
-                console.log("Moving Forward by", this.step);
+                logger.info("Moving Forward by", this.step);
                 position.getBound().setY(step);
             }
         } else if (position.getHeading() === Heading.SOUTH) {
             const step: number = position.getBound().getY() - this.step;
             if (this.validYMove(step)) {
-                console.log("Moving Down by", this.step);
+                logger.info("Moving Down by", this.step);
                 position.getBound().setY(step);
             }
         } else if (position.getHeading() === Heading.EAST) {
             const step: number = position.getBound().getX() + this.step;
             if (this.validXMove(step)) {
-                console.log("Moving Right by", this.step);
+                logger.info("Moving Right by", this.step);
                 position.getBound().setX(step);
             }
         } else if (position.getHeading() === Heading.WEST) {
             const step: number = position.getBound().getX() - this.step;
             if (this.validXMove(step)) {
-                console.log("Moving Left by", this.step);
+                logger.info("Moving Left by", this.step);
                 position.getBound().setX(step);
             }
         }
-        console.log("Position is now::", position);
+        logger.info("Position is now::", position);
         return position;
     }
     /*
@@ -140,64 +153,53 @@ class MoveRover implements Moveable {
      * E + R === S
      * W + R === N
      */
-    changePositionHeading(position: Position, direction: Direction): Position {
+    private changePositionHeading(position: Position, direction: Direction): Position {
         if (direction === Direction.LEFT) {
-            console.log("Changing Heading to the LEFT...");
+            logger.info("Changing Heading to the LEFT...");
             if (position.getHeading() === Heading.NORTH) {
-                console.log("Heading will now be WEST...");
+                logger.info("Heading will now be WEST...");
                 position.setHeading(Heading.WEST);
             } else if (position.getHeading() === Heading.SOUTH) {
-                console.log("Heading will now be EAST...");
+                logger.info("Heading will now be EAST...");
                 position.setHeading(Heading.EAST);
             } else if (position.getHeading() === Heading.EAST) {
-                console.log("Heading will now be NORTH...");
+                logger.info("Heading will now be NORTH...");
                 position.setHeading(Heading.NORTH);
             } else if (position.getHeading() === Heading.WEST) {
-                console.log("Heading will now be SOUTH...");
+                logger.info("Heading will now be SOUTH...");
                 position.setHeading(Heading.SOUTH);
             }
         } else {
-            console.log("Changing Heading to the RIGHT...");
+            logger.info("Changing Heading to the RIGHT...");
             if (position.getHeading() === Heading.NORTH) {
-                console.log("Heading will now be EAST...");
+                logger.info("Heading will now be EAST...");
                 position.setHeading(Heading.EAST);
             } else if (position.getHeading() === Heading.SOUTH) {
-                console.log("Heading will now be WEST...");
+                logger.info("Heading will now be WEST...");
                 position.setHeading(Heading.WEST);
             } else if (position.getHeading() === Heading.EAST) {
-                console.log("Heading will now be SOUTH...");
+                logger.info("Heading will now be SOUTH...");
                 position.setHeading(Heading.SOUTH);
             } else if (position.getHeading() === Heading.WEST) {
-                console.log("Heading will now be NORTH...");
+                logger.info("Heading will now be NORTH...");
                 position.setHeading(Heading.NORTH);
             }
         }
         return position;
     }
-    algorithm(position: Position, inputOfSequence: Direction | Movement): Position {
+    private algorithm(position: Position, inputOfSequence: Direction | Movement): Position {
         if (inputOfSequence === Movement.MOVE) {
-            console.log("Move Command");
+            logger.info("Move Command");
             this.changePositionMove(position);
         } else {
-            console.log("Change Heading Command");
-            this.changePositionHeading(position, inputOfSequence)
-        }
-        return position;
-    }
-    /*
-     * @Overrride
-     * Move from the current position to a position computed from input parameters
-     */
-    move(position: Position, command: Command): Position {
-        for(const sequence of command.getSequence()) {
-            console.log("inputOfSequence::", sequence);
-            this.algorithm(position, sequence);
+            logger.info("Change Heading Command");
+            this.changePositionHeading(position, inputOfSequence);
         }
         return position;
     }
 }
 
-const unSet = function(input: any): boolean { return (input === (null || undefined)) };
+const unSet: (input: any) => boolean = (input: any) => !input;
 
 /*
  * A bound represents an X, Y location
@@ -209,16 +211,16 @@ class Bound {
         this.x = unSet(x) ? -1 : x;
         this.y = unSet(y) ? -1 : y;
     }
-    getX(): number {
+    public getX(): number {
         return this.x;
-    };
-    getY(): number {
+    }
+    public getY(): number {
         return this.y;
-    };
-    setX(x: number): void {
+    }
+    public setX(x: number): void {
         this.x = x;
     }
-    setY(y: number): void {
+    public setY(y: number): void {
         this.y = y;
     }
 }
@@ -233,28 +235,28 @@ class Position {
         this.bound = bound;
         this.heading = heading;
     }
-    getBound(): Bound {
+    public getBound(): Bound {
         return this.bound;
     }
-    getHeading(): Heading {
+    public getHeading(): Heading {
         return this.heading;
     }
-    setBound(bound: Bound): void {
+    public setBound(bound: Bound): void {
         this.bound = bound;
     }
-    setHeading(heading: Heading): void {
+    public setHeading(heading: Heading): void {
         this.heading = heading;
     }
 }
 
 // enables communication between Subject and Observer
 class Mediator {
-    private map: Map<Rover, Array<Message>>;
+    private map: Map<Rover, Message[]>;
     constructor() {
         this.map = new Map();
     }
-    push(rover: Rover, message: Message): void {
-        let messages: Array<Message> | undefined = this.map.get(rover);
+    public push(rover: Rover, message: Message): void {
+        let messages: Message[] | undefined = this.map.get(rover);
         if (!messages) {
             messages = [];
             this.map.set(rover, messages);
@@ -262,41 +264,41 @@ class Mediator {
         messages.push(message);
         this.map.set(rover, messages);
     }
-    pull(rover: Rover): Array<Message> | undefined {
-        let messages: Array<Message> | undefined = this.map.get(rover);
+    public pull(rover: Rover): Message[] | undefined {
+        let messages: Message[] | undefined = this.map.get(rover);
         if (!messages) {
             messages = [];
             this.map.set(rover, messages);
         }
         return this.map.get(rover);
     }
-    flush(rover: Rover): void {
+    public flush(rover: Rover): void {
         this.map.set(rover, []);
     }
 }
 
 // Subject
 class Operator implements Communicable {
-    private rovers: Array<Observable>;
+    private rovers: Observable[];
     private mediator: Mediator;
-    constructor(rovers: Array<Observable>, mediator: Mediator) {
+    constructor(rovers: Observable[], mediator: Mediator) {
         this.rovers = unSet(rovers) ? [] : rovers;
         this.mediator = mediator;
-    }
-    getRovers(): Array<Observable> {
-        return this.rovers;
-    }
-    addRover(rover: Observable): void {
-        this.rovers.push(rover);
     }
     /*
      * @Override
      */
-    notifyAll(): void {
-        console.log("notifyAll::", this.rovers);
+    public notifyAll(): void {
+        logger.info("notifyAll::", this.rovers);
         for (const rover of this.rovers) {
             rover.notify();
         }
+    }
+    public getRovers(): Observable[] {
+        return this.rovers;
+    }
+    public addRover(rover: Observable): void {
+        this.rovers.push(rover);
     }
 }
 
@@ -318,49 +320,52 @@ class Rover implements Observable {
      * @Override
      * Once we receive a notification, we can begin to apply commands to the Rover instance
      */
-    notify(): void {
-        console.log("notify::", this.getId());
-        const messages: Array<Message> | undefined = this.mediator.pull(this);
+    public notify(): void {
+        logger.info("notify::", this.getId());
+        const messages: Message[] | undefined = this.mediator.pull(this);
         if (messages) {
-            for(const message of messages) {
-                console.log("message::", this.getId(), message);
-                for(const command of message.getCommands()) {
-                    console.log("command::", this.getId(), command.getSequence());
-                    const cachePosition: Position = new Position(this.getCurrentPosition().getBound(), this.getCurrentPosition().getHeading());
-                    console.log("currentPosition::", this.getId(), cachePosition);
+            for (const message of messages) {
+                logger.info("message::", this.getId(), message);
+                for (const command of message.getCommands()) {
+                    logger.info("command::", this.getId(), command.getSequence());
+                    const cachePosition: Position = new Position(this.getCurrentPosition().getBound(),
+                                                                 this.getCurrentPosition().getHeading());
+                    logger.info("currentPosition::", this.getId(), cachePosition);
                     this.setPreviousPosition(cachePosition);
                     const currentPosition: Position = this.moveRover.move(this.getCurrentPosition(), command);
                     this.setCurrentPosition(currentPosition);
-                    console.log("previousPosition::", this.getId(), this.getPreviousPosition());
-                    console.log("currentPosition::", this.getId(), this.getCurrentPosition());
+                    logger.info("previousPosition::", this.getId(), this.getPreviousPosition());
+                    logger.info("currentPosition::", this.getId(), this.getCurrentPosition());
                 }
             }
         }
         this.mediator.flush(this);
     }
-    getId(): string {
+    public getId(): string {
         return this.id;
     }
-    getPreviousPosition(): Position {
+    public getPreviousPosition(): Position {
         return this.previousPosition;
     }
-    getCurrentPosition(): Position {
+    public getCurrentPosition(): Position {
         return this.currentPosition;
     }
-    getUpperBound(): Bound {
+    public getUpperBound(): Bound {
         return this.moveRover.getUpperBound();
     }
-    setPreviousPosition(position: Position): void {
-        this.previousPosition = new Position(new Bound(position.getBound().getX(), position.getBound().getY()), position.getHeading());
+    public setPreviousPosition(position: Position): void {
+        this.previousPosition = new Position(new Bound(position.getBound().getX(), position.getBound().getY()),
+                                             position.getHeading());
     }
-    setCurrentPosition(position: Position): void {
-        this.currentPosition = new Position(new Bound(position.getBound().getX(), position.getBound().getY()), position.getHeading());
+    public setCurrentPosition(position: Position): void {
+        this.currentPosition = new Position(new Bound(position.getBound().getX(), position.getBound().getY()),
+                                            position.getHeading());
     }
-    setUpperBound(x: number, y: number): void {
+    public setUpperBound(x: number, y: number): void {
         this.moveRover.setUpperBound(x, y);
     }
     private generateId(): string {
-        return Math.random().toString(11).replace('0.', '');
+        return Math.random().toString(11).replace("0.", "");
     }
 }
 
@@ -376,5 +381,5 @@ export {
     Command,
     Direction,
     Movement,
-    MoveRover
+    MoveRover,
 };

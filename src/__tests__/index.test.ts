@@ -9,6 +9,20 @@ import { Command } from "../index";
 import { Direction } from "../index";
 import { Movement } from "../index";
 import { MoveRover } from "../index";
+import { Observable } from "../index";
+
+// Structural
+describe("LinkedList", () => {});
+
+// Structural
+describe("Tree", () => {});
+
+// Behavioural::Strategy
+describe("ShortestPath", () => {});
+
+describe("Operator", () => {});
+
+describe("Rover", () => {});
 
 describe("Rovers On Mars", () => {
     test("rovers move to new location as expected", async () => {
@@ -29,7 +43,7 @@ describe("Rovers On Mars", () => {
             Movement.MOVE,
             Direction.LEFT,
             Movement.MOVE,
-            Movement.MOVE
+            Movement.MOVE,
         ];
         const sequence1: Array<Direction|Movement> = [
             Movement.MOVE,
@@ -41,7 +55,7 @@ describe("Rovers On Mars", () => {
             Movement.MOVE,
             Direction.RIGHT,
             Direction.RIGHT,
-            Movement.MOVE
+            Movement.MOVE,
         ];
         command0.addSequence(sequence0);
         command1.addSequence(sequence1);
@@ -51,7 +65,7 @@ describe("Rovers On Mars", () => {
         mediator.push(rover1, message1);
         expect(rover0.getId()).toEqual("rover_0");
         expect(rover1.getId()).toEqual("rover_1");
-        const rovers: Array<Rover> = [rover0, rover1];
+        const rovers: Rover[] = [rover0, rover1];
         const operator: Operator = new Operator(rovers, mediator);
         expect(rover0).toBeInstanceOf(Rover);
         expect(rover1).toBeInstanceOf(Rover);
