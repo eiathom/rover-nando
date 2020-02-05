@@ -1,6 +1,7 @@
 import { Commandable } from "../mediator/index";
 import { Bound } from "../observer/index";
 import { Position } from "../observer/index";
+import { isUnSet } from "../services/util/index";
 
 enum Direction {
     LEFT = "L", RIGHT = "R",
@@ -14,21 +15,16 @@ enum Heading {
     NORTH = "N", SOUTH = "S", EAST = "E", WEST = "W",
 }
 
-// Strategy
-interface Strategical {
-    execute: () => void;
-}
-
 // Specific Strategy
-interface Moveable extends Strategical {
+interface Strategical {
     /*
      * Compute the journey from the current position with the new position
      */
-    move: (position: Position, command: Commandable) => Position;
+    execute: (position: Position, command: Commandable) => Position;
 }
 
 // Concrete Strategy
-class MoveRover implements Moveable {
+class MoveRover implements Strategical {
     // we default to a move step of 1
     private readonly step: number = 1;
     private lowerBound: Bound;
@@ -38,16 +34,10 @@ class MoveRover implements Moveable {
         this.upperBound = upperBound;
     }
     /*
-     * @Override
-     */
-    public execute(): void {
-        logger.info("execute...");
-    }
-    /*
      * @Overrride
      * Move from the current position to a position computed from input parameters
      */
-    public move(position: Position, command: Commandable): Position {
+    public execute(position: Position, command: Commandable): Position {
         for (const sequence of command.getCommands()) {
             logger.info("inputOfSequence::", sequence);
             this.algorithm(position, sequence);

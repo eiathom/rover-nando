@@ -78,5 +78,7 @@ describe("Rovers On Mars", () => {
         expect(rover1.getCurrentPosition().getBound().getX()).toEqual(5);
         expect(rover1.getCurrentPosition().getBound().getY()).toEqual(1);
         expect(rover1.getCurrentPosition().getHeading()).toEqual(Heading.EAST);
+        operator.notifySpecific(rover0);
+        operator.notifySpecific(rover1);
     });
 });

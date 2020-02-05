@@ -53,6 +53,7 @@ interface Communicable {
      * Initiate a broadcast to all observers to perform a behaviour (action)
      */
     notifyAll: () => void;
+    notifySpecific: (observer: Observable) => void;
 }
 
 // subscriber
@@ -292,6 +293,17 @@ class Operator implements Communicable {
         logger.info("notifyAll::", this.rovers);
         for (const rover of this.rovers) {
             rover.notify();
+        }
+    }
+    /*
+     * @Override
+     */
+    public notifySpecific(observer: Observable): void {
+        const knownObserver: Observable | undefined = this.rovers.find((o) => o === observer);
+        if (knownObserver) {
+            knownObserver.notify();
+        } else {
+            logger.warn("unknown observer", observer);
         }
     }
     public getRovers(): Observable[] {
