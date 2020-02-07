@@ -1,46 +1,21 @@
+import { logger } from "../../services/logging/index";
+import { isUnSet } from "../../services/util/index";
 import { Mediatable } from "../mediator/index";
-import { isUnSet } from "../services/util/index";
+import { Sendable } from "../mediator/index";
+import { Heading } from "../strategy/index";
 import { Moveable } from "../strategy/index";
 import { Strategical } from "../strategy/index";
 
-// subscriber
-// receiver
-// observer::observer
-// behavior
 interface Observable {
-    /*
-     * Notify observers to perform a behaviour (action)
-     */
     notify: () => void;
 }
 
-// Observer
-abstract class BaseObserver implements Observable {
-    private id: string;
-    private mediator: Mediatable;
-    private strategy: Strategical;
-    constructor(id: string, mediator: Mediatable, strategy: Strategical) {
-        this.id = isUnSet(id) ? this.generateId() : id;
-        this.mediator = mediator;
-        this.strategy = strategy;
-    }
-    public getId(): string {
-        return this.id;
-    }
-    private generateId(): string {
-        return Math.random().toString(11).replace("0.", "");
-    }
-}
-
-/*
- * A bound represents an X, Y location
- */
 class Bound {
     private x: number;
     private y: number;
     constructor(x: number, y: number) {
-        this.x = unSet(x) ? -1 : x;
-        this.y = unSet(y) ? -1 : y;
+        this.x = isUnSet(x) ? -1 : x;
+        this.y = isUnSet(y) ? -1 : y;
     }
     public getX(): number {
         return this.x;
@@ -56,9 +31,6 @@ class Bound {
     }
 }
 
-/*
- * A position is made up of a bound (location) and a heading (point of view)
- */
 class Position {
     private bound: Bound;
     private heading: Heading;
@@ -80,48 +52,66 @@ class Position {
     }
 }
 
-// Concrete Observer
-class Rover extends BaseObserver {
+abstract class BaseObserver implements Observable {
+    private id: string;
+    private mediator: Mediatable;
+    private strategy: Strategical;
+    constructor(id: string, mediator: Mediatable, strategy: Strategical) {
+        this.id = isUnSet(id) ? this.generateId() : id;
+        this.mediator = mediator;
+        this.strategy = strategy;
+    }
+    public abstract notify(): void;
+    public getId(): string {
+        return this.id;
+    }
+    public getMediatable(): Mediatable {
+        return this.mediator;
+    }
+    public getStrategical(): Strategical {
+        return this.strategy;
+    }
+    private generateId(): string {
+        return Math.random().toString(11).replace("0.", "");
+    }
+}
+
+class Observer extends BaseObserver {
     private previousPosition: Position;
     private currentPosition: Position;
-    constructor(id: string, position: Position, mediator: Mediator, moveRover: MoveRover) {
-        super(id, mediator, moveRover);
+    constructor(id: string, position: Position, mediator: Mediatable, strategy: Strategical) {
+        super(id, mediator, strategy);
         this.previousPosition = new Position(position.getBound(), position.getHeading());
         this.currentPosition = new Position(position.getBound(), position.getHeading());
     }
     /*
      * @Override
-     * Once we receive a notification, we can begin to apply commands to the Rover instance
      */
     public notify(): void {
         logger.info("notify::", this.getId());
-        const messages: Message[] | undefined = this.mediator.pull(this);
+        const messages: Sendable[] | undefined = this.getMediatable().pull(this);
         if (messages) {
             for (const message of messages) {
                 logger.info("message::", this.getId(), message);
-                for (const command of message.getCommands()) {
-                    logger.info("command::", this.getId(), command.getSequence());
+                for (const command of message.getContent()) {
+                    logger.info("command::", this.getId(), command.getCommands());
                     const cachePosition: Position = new Position(this.getCurrentPosition().getBound(),
                                                                  this.getCurrentPosition().getHeading());
                     logger.info("currentPosition::", this.getId(), cachePosition);
                     this.setPreviousPosition(cachePosition);
-                    const currentPosition: Position = this.moveRover.move(this.getCurrentPosition(), command);
-                    this.setCurrentPosition(currentPosition);
+                    this.getStrategical().execute();
                     logger.info("previousPosition::", this.getId(), this.getPreviousPosition());
                     logger.info("currentPosition::", this.getId(), this.getCurrentPosition());
                 }
             }
         }
-        this.mediator.flush(this);
+        this.getMediatable().flush(this);
     }
     public getPreviousPosition(): Position {
         return this.previousPosition;
     }
     public getCurrentPosition(): Position {
         return this.currentPosition;
-    }
-    public getUpperBound(): Bound {
-        return this.moveRover.getUpperBound();
     }
     public setPreviousPosition(position: Position): void {
         this.previousPosition = new Position(new Bound(position.getBound().getX(), position.getBound().getY()),
@@ -131,13 +121,12 @@ class Rover extends BaseObserver {
         this.currentPosition = new Position(new Bound(position.getBound().getX(), position.getBound().getY()),
                                             position.getHeading());
     }
-    public setUpperBound(x: number, y: number): void {
-        this.moveRover.setUpperBound(x, y);
-    }
 }
 
 export {
     BaseObserver,
+    Bound,
     Observable,
-    Rover,
+    Observer,
+    Position,
 };

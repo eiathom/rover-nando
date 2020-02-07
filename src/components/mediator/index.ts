@@ -3,11 +3,13 @@ import { Observable } from "../observer/index";
 interface Commandable {
     addCommands: (commands: any[]) => void;
     getCommands: () => any[];
+    flushCommands: () => void;
 }
 
 interface Sendable {
     addContent: (content: Commandable) => void;
     getContent: () => Commandable[];
+    flushContent: () => void;
 }
 
 interface Mediatable {
@@ -16,9 +18,6 @@ interface Mediatable {
     flush: (target: Observable) => void;
 }
 
-/*
- * A command is a sequence of input a rover can be instructed to operate on
- */
 class Command implements Commandable {
     private sequence: any[];
     constructor() {
@@ -30,11 +29,11 @@ class Command implements Commandable {
     public getCommands(): any[] {
         return this.sequence;
     }
+    public flushCommands(): void {
+        this.sequence = [];
+    }
 }
 
-/*
- * A Message encapsulates s series of instructions destined to be used at a Consumer
- */
 class Message implements Sendable {
     private commands: Commandable[];
     constructor() {
@@ -46,12 +45,12 @@ class Message implements Sendable {
     public getContent(): Commandable[] {
         return this.commands;
     }
+    public flushContent(): void {
+        this.commands = [];
+    }
 }
 
-/*
- * Enables communication between Subject and Observer
- */
-class Mediator {
+class Mediator implements Mediatable {
     private map: Map<Observable, Sendable[]>;
     constructor() {
         this.map = new Map();

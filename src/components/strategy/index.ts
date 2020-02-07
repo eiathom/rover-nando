@@ -1,7 +1,8 @@
+import { logger } from "../../services/logging/index";
+
 import { Commandable } from "../mediator/index";
 import { Bound } from "../observer/index";
 import { Position } from "../observer/index";
-import { isUnSet } from "../services/util/index";
 
 enum Direction {
     LEFT = "L", RIGHT = "R",
@@ -15,34 +16,52 @@ enum Heading {
     NORTH = "N", SOUTH = "S", EAST = "E", WEST = "W",
 }
 
-// Specific Strategy
 interface Strategical {
-    /*
-     * Compute the journey from the current position with the new position
-     */
-    execute: (position: Position, command: Commandable) => Position;
+    execute: () => void;
 }
 
-// Concrete Strategy
-class MoveRover implements Strategical {
-    // we default to a move step of 1
-    private readonly step: number = 1;
+interface Moveable extends Strategical {
+    move: () => void;
+}
+
+abstract class BaseMoveStrategy implements Moveable {
+    private step: number;
     private lowerBound: Bound;
     private upperBound: Bound;
-    constructor(lowerBound: Bound, upperBound: Bound) {
+    private position: Position;
+    private commandable: Commandable;
+    constructor(lowerBound: Bound, upperBound: Bound, position: Position,
+                commandable: Commandable, step: number = 1) {
         this.lowerBound = lowerBound;
         this.upperBound = upperBound;
+        this.position = position;
+        this.commandable = commandable;
+        this.step = step;
     }
     /*
-     * @Overrride
-     * Move from the current position to a position computed from input parameters
+     * @Override
      */
-    public execute(position: Position, command: Commandable): Position {
-        for (const sequence of command.getCommands()) {
+    public move(): void {
+        for (const sequence of this.getCommandable().getCommands()) {
             logger.info("inputOfSequence::", sequence);
-            this.algorithm(position, sequence);
+            this.algorithm(this.getPosition(), sequence);
         }
-        return position;
+        this.getCommandable().flushCommands();
+    }
+    /*
+     * @Override
+     */
+    public execute(): void {
+        this.move();
+    }
+    public getStep(): number {
+        return this.step;
+    }
+    public getPosition(): Position {
+        return this.position;
+    }
+    public getCommandable(): Commandable {
+        return this.commandable;
     }
     public getUpperBound(): Bound {
         return this.upperBound;
@@ -148,8 +167,19 @@ class MoveRover implements Strategical {
     }
 }
 
+class MoveStrategy extends BaseMoveStrategy {
+    constructor(lowerBound: Bound, upperBound: Bound, position: Position,
+                commandable: Commandable, step: number = 1) {
+        super(lowerBound, upperBound, position, commandable, step);
+    }
+}
+
 export {
-    Strategical,
+    BaseMoveStrategy,
+    Direction,
+    Heading,
     Moveable,
-    MoveRover,
+    Movement,
+    MoveStrategy,
+    Strategical,
 };
