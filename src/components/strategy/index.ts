@@ -25,6 +25,7 @@ interface Moveable extends Strategical {
 }
 
 abstract class BaseMoveStrategy implements Moveable {
+    private readonly defaultStep: number = 1;
     private step: number;
     private lowerBound: Bound;
     private upperBound: Bound;
@@ -36,7 +37,7 @@ abstract class BaseMoveStrategy implements Moveable {
         this.upperBound = upperBound;
         this.position = position;
         this.commandable = commandable;
-        this.step = step;
+        this.step = this.isValidStep(step) ? step : this.defaultStep;
     }
     /*
      * @Override
@@ -70,6 +71,9 @@ abstract class BaseMoveStrategy implements Moveable {
         this.upperBound.setX(x);
         this.upperBound.setY(y);
     }
+    private isValidStep(step: number): boolean {
+        return step > 0;
+    }
     private validYMove(step: number): boolean {
         return (step >= this.lowerBound.getY() && step <= this.upperBound.getY());
     }
@@ -88,24 +92,32 @@ abstract class BaseMoveStrategy implements Moveable {
             if (this.validYMove(step)) {
                 logger.info("Moving Forward by", this.step);
                 position.getBound().setY(step);
+            } else {
+                logger.warn(`Cannot Move North by ${this.step}, Would Be Out Of Bounds!`);
             }
         } else if (position.getHeading() === Heading.SOUTH) {
             const step: number = position.getBound().getY() - this.step;
             if (this.validYMove(step)) {
                 logger.info("Moving Down by", this.step);
                 position.getBound().setY(step);
+            } else {
+                logger.warn(`Cannot Move South by ${this.step}, Would Be Out Of Bounds!`);
             }
         } else if (position.getHeading() === Heading.EAST) {
             const step: number = position.getBound().getX() + this.step;
             if (this.validXMove(step)) {
                 logger.info("Moving Right by", this.step);
                 position.getBound().setX(step);
+            } else {
+                logger.warn(`Cannot Move East by ${this.step}, Would Be Out Of Bounds!`);
             }
         } else if (position.getHeading() === Heading.WEST) {
             const step: number = position.getBound().getX() - this.step;
             if (this.validXMove(step)) {
                 logger.info("Moving Left by", this.step);
                 position.getBound().setX(step);
+            } else {
+                logger.warn(`Cannot Move West by ${this.step}, Would Be Out Of Bounds!`);
             }
         }
         logger.info("Position is now::", position);
