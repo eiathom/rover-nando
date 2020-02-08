@@ -1,0 +1,5 @@
+const mergeSort: () => {};
+
+export {
+    mergeSort,
+};

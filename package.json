@@ -9,6 +9,7 @@
   "main": "dist/main.js",
   "scripts": {
     "test": "NODE_ENV=test npx jest --verbose --runInBand --coverage",
+    "test-cs": "npm run test ./src/services/cs/",
     "build": "NODE_ENV=production rm -rf dist && tsc --sourceMap -p ./",
     "lint": "NODE_ENV=production tslint -c tslint.json $(find ./src -type f -name '*.ts')",
     "main": "NODE_ENV=development `which ts-node` --files ./src/main.ts"
