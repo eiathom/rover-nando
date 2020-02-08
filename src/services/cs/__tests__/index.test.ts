@@ -156,6 +156,35 @@ describe("LinkedList", () => {
         expect(linkedList.getFirst()).toEqual(node2);
         expect(linkedList.getLast()).toEqual(node1);
     });
+    test("delete", async () => {
+        const data: number = 1980;
+        const node: Node<number> = new Node<number>(data);
+        const node1: Node<number> = new Node<number>(1);
+        const node2: Node<number> = new Node<number>(2);
+        const node3: Node<number> = new Node<number>(3);
+        const linkedList: LinkedList<number> = new LinkedList<number>();
+        linkedList.add(node1);
+        linkedList.add(node2);
+        linkedList.add(node);
+        linkedList.add(node3);
+        expect(linkedList.getSize()).toEqual(4);
+        expect(linkedList.contains(data)).toEqual(true);
+        linkedList.delete(data);
+        expect(linkedList.getSize()).toEqual(3);
+        expect(linkedList.contains(data)).toEqual(false);
+    });
+    test("insertAfter", async () => {
+        const data: number = 1980;
+        const newData: number = 1990;
+        const node: Node<number> = new Node<number>(data);
+        const linkedList: LinkedList<number> = new LinkedList<number>();
+        linkedList.add(node);
+        expect(linkedList.getSize()).toEqual(1);
+        expect(linkedList.contains(data)).toEqual(true);
+        linkedList.insertAfter(newData, data);
+        expect(linkedList.getSize()).toEqual(2);
+        expect(linkedList.contains(newData)).toEqual(true);
+    });
 });
 
 describe("linearLinkedSearch", () => {

@@ -2,12 +2,15 @@ interface Linkable<T> {
     add: (node: Node<T>) => void;
     append: (node: Node<T>) => void;
     contains: (data: T) => boolean;
+    delete: (data: T) => void;
     deleteFirst: () => void;
     deleteLast: () => void;
     find: (data: T) => Node<T> | undefined | null;
     getFirst: () => Node<T> | undefined | null;
     getLast: () => Node<T> | undefined | null;
     getSize: () => number;
+    insertAfter: (toInsert: T, after: T) => void;
+    // insertBefore: (toInsert: T, before: T) => void;
     isEmpty: () => boolean;
 }
 
@@ -79,12 +82,33 @@ class LinkedList<T> implements Linkable<T> {
             }
         }
     }
+    public delete(data: T): void {
+        if (!data) {
+            // do nothing
+        } else {
+            const nodeToDelete: Node<T> | undefined | null = this.find(data);
+            if (nodeToDelete) {
+                if (nodeToDelete === this.getFirst()) {
+                    this.deleteFirst();
+                } else if (nodeToDelete === this.getLast()) {
+                    this.deleteLast();
+                } else {
+                    const preceedingNode: Node<T> | undefined | null = this.findPreceedingNode(nodeToDelete);
+                    preceedingNode!.setNext(nodeToDelete.getNext());
+                    this.size = this.size - 1;
+                }
+            }
+        }
+    }
     public deleteFirst(): void {
         if (this.isEmpty()) {
             // do nothing
         } else {
             this.head = this.head!.getNext();
             this.size = this.size - 1;
+            if (this.size === 0 && this.tail) {
+                this.tail = null;
+            }
         }
     }
     public deleteLast(): void {
@@ -121,10 +145,10 @@ class LinkedList<T> implements Linkable<T> {
     }
     public contains(data: T): boolean {
         if (this.isEmpty()) {
-            return false;
+            throw new Error("empty, nothing to do");
         }
         if (!data) {
-            return false;
+            throw new Error("no data, nothing to do");
         }
         if (this.tail!.getData() === data) {
             return true;
@@ -140,6 +164,36 @@ class LinkedList<T> implements Linkable<T> {
             head = head!.getNext();
         }
         return false;
+    }
+    public insertAfter(toInsert: T, after: T): void {
+        if (!toInsert || !after) {
+            // do nothing
+        } else {
+            const nodeToInsertAfter: Node<T> | undefined | null = this.find(after);
+            if (nodeToInsertAfter) {
+                const newNode: Node<T> = new Node<T>(toInsert);
+                const nextNode: Node<T> | undefined | null = nodeToInsertAfter.getNext();
+                if (!nextNode) {
+                    this.tail = newNode;
+                }
+                newNode.setNext(nextNode);
+                nodeToInsertAfter.setNext(newNode);
+                this.size = this.size + 1;
+            }
+        }
+    }
+    /*
+     * Find the Node before this Node; the Node having it's next pointer as this Node
+     */
+    private findPreceedingNode(node: Node<T> | undefined | null): Node<T> | undefined | null {
+        let current: Node<T> | undefined | null = this.head!;
+        while (current!.getNext()) {
+            if (current!.getNext() === node) {
+                return current;
+            }
+            current = current!.getNext();
+        }
+        return null;
     }
 }
 
