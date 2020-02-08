@@ -188,6 +188,11 @@ describe("LinkedList", () => {
 });
 
 describe("linearLinkedSearch", () => {
+    test("nothing to do", async () => {
+        const linkedList: LinkedList<number> = new LinkedList<number>();
+        const actualNode: Node<number> = linearLinkedSearch(linkedList, 1)!;
+        expect(actualNode).toEqual(null);
+    });
     test("finds Node", async () => {
         const data: number = 1980;
         const node: Node<number> = new Node<number>(data);
