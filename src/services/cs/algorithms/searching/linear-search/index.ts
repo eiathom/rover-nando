@@ -8,8 +8,8 @@ import {
  */
 const linearLinkedSearch: <T>(list: LinkedList<T>, data: T) => Node<T> | undefined | null =
     <T>(list: LinkedList<T>, data: T) => {
-        if (list.isEmpty()) {
-            return null;
+        if (list.isEmpty() || !data) {
+            throw new Error("nothing to do");
         }
         if (list.getLast()!.getData() === data) {
             return list.getLast();
