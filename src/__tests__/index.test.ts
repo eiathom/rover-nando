@@ -1,18 +1,19 @@
-import { Operator } from "../index";
-import { Rover } from "../index";
-import { Position } from "../index";
-import { Mediator } from "../index";
-import { Bound } from "../index";
-import { Heading } from "../index";
-import { Message } from "../index";
-import { Command } from "../index";
-import { Direction } from "../index";
-import { Movement } from "../index";
-import { MoveRover } from "../index";
+import { Operator } from "../service/index";
+import { Rover } from "../service/index";
+import { Position } from "../model";
+import { ConcreteMediator } from "../service/index";
+import { Mediationable } from "../service/index";
+import { Bound } from "../model";
+import { Heading } from "../model";
+import { Message } from "../model";
+import { Command } from "../model";
+import { Direction } from "../model";
+import { Movement } from "../model";
+import { MoveRover } from "../service/index";
 
 describe("Rovers On Mars", () => {
     test("rovers move to new location as expected", async () => {
-        const mediator: Mediator = new Mediator();
+        const mediator: Mediationable = new ConcreteMediator();
         const moveRover: MoveRover = new MoveRover(new Bound(0, 0), new Bound(5, 5));
         const rover0: Rover = new Rover("rover_0", new Position(new Bound(1, 2), Heading.NORTH), mediator, moveRover);
         const rover1: Rover = new Rover("rover_1", new Position(new Bound(3, 3), Heading.EAST), mediator, moveRover);
@@ -56,7 +57,7 @@ describe("Rovers On Mars", () => {
         expect(rover0).toBeInstanceOf(Rover);
         expect(rover1).toBeInstanceOf(Rover);
         expect(operator).toBeInstanceOf(Operator);
-        expect(operator.getRovers()).toHaveLength(2);
+        expect(operator.getObservables()).toHaveLength(2);
         operator.notifyAll();
         expect(rover0.getCurrentPosition().getBound().getX()).toEqual(1);
         expect(rover0.getCurrentPosition().getBound().getY()).toEqual(3);
