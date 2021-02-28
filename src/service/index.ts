@@ -204,9 +204,9 @@ class Rover implements Observable {
     private id: string;
     private previousPosition: Position;
     private currentPosition: Position;
-    private abstractMoveable: AbstractMove;
+    private abstractMoveable: Moveable;
     private mediator: Mediationable;
-    constructor(id: string, position: Position, mediator: Mediationable, abstractMoveable: AbstractMove) {
+    constructor(id: string, position: Position, mediator: Mediationable, abstractMoveable: Moveable) {
         this.id = unSet(id) ? this.generateId() : id;
         this.previousPosition = new Position(position.getBound(), position.getHeading());
         this.currentPosition = new Position(position.getBound(), position.getHeading());
